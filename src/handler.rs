@@ -4,6 +4,7 @@ use log::info;
 use std::env;
 use std::fs;
 use std::path::Path;
+use serde::Deserialize;
 
 fn list_dir_recursive(path: &Path) {
     if path.is_dir() {
@@ -32,6 +33,8 @@ fn list_dirs(path: &Path) {
                         let path = entry.path();
                         if path.is_dir() {
                             println!("Directory: {:?}", path.display());
+                        } else {
+                            println!("File: {:?}", path.display());   
                         }
                     }
                 }
@@ -43,6 +46,11 @@ fn list_dirs(path: &Path) {
     }
 }
 
+#[derive(Debug, Deserialize)]
+struct Config {
+    x: String,
+}
+
 // Implement your function's logic here
 pub async fn index(req: HttpRequest, config: Data<HandlerConfig>) -> HttpResponse {
     info!("{:#?}", req);
@@ -50,7 +58,7 @@ pub async fn index(req: HttpRequest, config: Data<HandlerConfig>) -> HttpRespons
     // Get the current directory
     match env::current_dir() {
         Ok(current_dir) => {
-            println!("Current directory: {:?}", current_dir);
+            println!("Current directory1: {:?}", current_dir);
             list_dir_recursive(&current_dir);
         }
         Err(e) => {
@@ -61,9 +69,23 @@ pub async fn index(req: HttpRequest, config: Data<HandlerConfig>) -> HttpRespons
         Ok(value) => println!("The value of x is: {}", value),
         Err(e) => println!("Couldn't read x ({})", e),
     }
-    println!("Root dir");
-    let root = Path::new("/");
-    list_dirs(root);
+
+    let yaml_str1 = std::fs::read_to_string("test/config.yaml").expect("Failed to read config file");
+        
+    // Deserialize the YAML string into your Config struct.
+    let config1: Config = serde_yaml::from_str(&yaml_str1).expect("Failed to parse YAML");
+
+    // Now you can access the configuration values as needed.
+    println!("config1 {:?}", config1);
+
+    let yaml_str2 = std::fs::read_to_string("bin/config.yaml").expect("Failed to read config file");
+        
+    // Deserialize the YAML string into your Config struct.
+    let config2: Config = serde_yaml::from_str(&yaml_str2).expect("Failed to parse YAML");
+
+    // Now you can access the configuration values as needed.
+    println!("config2 {:?}", config2);
+    
 
     if req.method() == Method::GET {
         HttpResponse::Ok().body(format!("Hello {}!\n", config.name))

@@ -1,11 +1,21 @@
 specVersion: 0.35.0
 name: my-rust-function
 runtime: rust
-registry: docker.io/samchenzk
-image: docker.io/samchenzk/test:latest
+registry: docker.io/snarkify
+image: docker.io/snarkify/test-services:my-rust-function
+imageDigest: sha256:277aa0613543919c92b8824b2e48442a122d92e809c8d108146f984806c4ad35
 created: 2023-12-04T23:58:22.368553-08:00
 build:
   buildpacks:
   - docker.io/paketocommunity/rust
-  pvcSize: 256Mi
   builder: pack
+  buildEnvs:
+  - name: BP_INCLUDE_FILES
+    value: '**/*'
+  - name: BP_EXCLUDE_FILES
+    value: func.yaml
+  - name: BP_DEBUG
+    value: "true"
+  pvcSize: 256Mi
+deploy:
+  namespace: default
